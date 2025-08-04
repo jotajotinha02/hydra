@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Vendas</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; }
+        h1 { text-align: center; color: #333; }
+        .form-box { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        input { padding: 10px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; width: 150px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        .delete-btn { background: #dc3545; }
+        .delete-btn:hover { background: #c82333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
+        th { background: #f8f9fa; }
+        .totals { background: #e9ecef; padding: 15px; border-radius: 8px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Vendas</h1>
+        
+        <div class="form-box">
+            <h3>Registrar Nova Venda</h3>
+            <input type="text" id="usuario" placeholder="Nome do usuário">
+            <input type="number" id="quantidade" placeholder="Quantidade">
+            <input type="number" id="valor" step="0.01" placeholder="Valor (R$)">
+            <button onclick="adicionarVenda()">Registrar Venda</button>
+        </div>
+
+        <div class="totals">
+            <h3>Totais</h3>
+            <p><strong>Total de Vendas:</strong> <span id="totalVendas">0</span></p>
+            <p><strong>Quantidade Total:</strong> <span id="totalQuantidade">0</span></p>
+            <p><strong>Valor Total:</strong> R$ <span id="totalValor">0,00</span></p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Data/Hora</th>
+                    <th>Usuário</th>
+                    <th>Quantidade</th>
+                    <th>Valor</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaVendas">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        let vendas = [];
+
+        // Sistema funciona localmente (sem API)
+        function carregarVendas() {
+            // Carrega do localStorage
+            const vendasSalvas = localStorage.getItem('vendas');
+            if (vendasSalvas) {
+                vendas = JSON.parse(vendasSalvas);
+            }
+            atualizarTabela();
+            calcularTotais();
+        }
+
+        function salvarVendas() {
+            // Salva no localStorage
+            localStorage.setItem('vendas', JSON.stringify(vendas));
+        }
+
+        function adicionarVenda() {
+            const usuario = document.getElementById('usuario').value;
+            const quantidade = parseInt(document.getElementById('quantidade').value);
+            const valor = parseFloat(document.getElementById('valor').value);
+
+            if (!usuario || !quantidade || !valor) {
+                alert('Preencha todos os campos!');
+                return;
+            }
+
+            const novaVenda = {
+                id: Date.now(),
+                usuario: usuario,
+                quantidade: quantidade,
+                valor: valor,
+                data: new Date().toISOString()
+            };
+
+            vendas.unshift(novaVenda);
+            salvarVendas();
+            
+            // Limpar formulário
+            document.getElementById('usuario').value = '';
+            document.getElementById('quantidade').value = '';
+            document.getElementById('valor').value = '';
+
+            atualizarTabela();
+            calcularTotais();
+            alert('Venda registrada com sucesso!');
+        }
+
+        function removerVenda(id) {
+            if (confirm('Tem certeza que deseja remover esta venda?')) {
+                vendas = vendas.filter(venda => venda.id != id);
+                salvarVendas();
+                atualizarTabela();
+                calcularTotais();
+                alert('Venda removida!');
+            }
+        }
+
+        function atualizarTabela() {
+            const tbody = document.getElementById('tabelaVendas');
+            tbody.innerHTML = '';
+
+            vendas.forEach(venda => {
+                const linha = document.createElement('tr');
+                const data = new Date(venda.data).toLocaleString('pt-BR');
+                
+                linha.innerHTML = `
+                    <td>${data}</td>
+                    <td>${venda.usuario}</td>
+                    <td>${venda.quantidade}</td>
+                    <td>R$ ${parseFloat(venda.valor).toFixed(2).replace('.', ',')}</td>
+                    <td>
+                        <button class="delete-btn" onclick="removerVenda(${venda.id})">
+                            Remover
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(linha);
+            });
+        }
+
+        function calcularTotais() {
+            const totalVendas = vendas.length;
+            const totalQuantidade = vendas.reduce((total, venda) => total + parseInt(venda.quantidade), 0);
+            const totalValor = vendas.reduce((total, venda) => total + parseFloat(venda.valor), 0);
+
+            document.getElementById('totalVendas').textContent = totalVendas;
+            document.getElementById('totalQuantidade').textContent = totalQuantidade;
+            document.getElementById('totalValor').textContent = totalValor.toFixed(2).replace('.', ',');
+        }
+
+        // Carregar vendas quando a página abrir
+        carregarVendas();
+    </script>
+</body>
+</html>
+<body class="bg-gray-100">
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6">Sistema de Contabilidade de Vendas</h1>
+        
+        <!-- Formulário -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Registrar Nova Venda</h2>
+            <form id="saleForm" class="grid grid-3">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Usuário:</label>
+                    <input type="text" id="usuario" class="input" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Quantidade:</label>
+                    <input type="number" id="quantidade" class="input" min="1" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Valor (R$):</label>
+                    <input type="number" id="valor" class="input" step="0.01" min="0.01" required>
+                </div>
+                <div class="col-span-3">
+                    <button type="submit" class="btn btn-primary">Registrar Venda</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Filtros -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Filtros</h2>
+            <div class="grid grid-3">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Filtrar por usuário:</label>
+                    <input type="text" id="filtroUsuario" class="input" placeholder="Digite o usuário">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Filtrar por data:</label>
+                    <input type="date" id="filtroData" class="input">
+                </div>
+                <div class="flex items-end">
+                    <button onclick="aplicarFiltros()" class="btn btn-primary mr-2">Filtrar</button>
+                    <button onclick="limparFiltros()" class="btn btn-secondary">Limpar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Totalizadores -->
+        <div class="grid grid-3">
+            <div class="card text-center">
+                <h3 class="text-lg font-semibold">Total de Vendas</h3>
+                <p id="totalVendas" class="text-2xl font-bold text-blue-600">0</p>
+            </div>
+            <div class="card text-center">
+                <h3 class="text-lg font-semibold">Quantidade Total</h3>
+                <p id="totalQuantidade" class="text-2xl font-bold text-green-600">0</p>
+            </div>
+            <div class="card text-center">
+                <h3 class="text-lg font-semibold">Valor Total</h3>
+                <p id="totalValor" class="text-2xl font-bold text-purple-600">R$ 0,00</p>
+            </div>
+        </div>
+
+        <!-- Tabela de Vendas -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Histórico de Vendas</h2>
+            <div id="loading" class="text-center py-4" style="display: none;">Carregando...</div>
+            <div class="overflow-x-auto">
+                <table id="salesTable">
+                    <thead>
+                        <tr>
+                            <th>Data/Hora</th>
+                            <th>Usuário</th>
+                            <th>Quantidade</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="salesBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        let allSales = [];
+
+        // Carregar vendas
+        async function loadSales(usuario = '', data = '') {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                
+                let url = `${API_BASE}/sales`;
+                const params = new URLSearchParams();
+                if (usuario) params.append('usuario', usuario);
+                if (data) params.append('data', data);
+                if (params.toString()) url += '?' + params.toString();
+
+                const response = await fetch(url);
+                const sales = await response.json();
+                
+                allSales = sales;
+                renderSales(sales);
+                updateTotals(sales);
+            } catch (error) {
+                console.error('Erro ao carregar vendas:', error);
+                alert('Erro ao carregar vendas. Verifique sua conexão.');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Renderizar tabela
+        function renderSales(sales) {
+            const tbody = document.getElementById('salesBody');
+            tbody.innerHTML = '';
+
+            if (sales.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Nenhuma venda encontrada</td></tr>';
+                return;
+            }
+
+            sales.forEach(sale => {
+                const row = document.createElement('tr');
+                const data = new Date(sale.data).toLocaleString('pt-BR');
+                
+                row.innerHTML = `
+                    <td>${data}</td>
+                    <td>${sale.usuario}</td>
+                    <td>${sale.quantidade}</td>
+                    <td>R$ ${parseFloat(sale.valor).toFixed(2).replace('.', ',')}</td>
+                    <td>
+                        <button onclick="deleteSale('${sale.id}')" class="btn btn-danger btn-sm">
+                            Remover
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Atualizar totais
+        function updateTotals(sales) {
+            const totalVendas = sales.length;
+            const totalQuantidade = sales.reduce((sum, sale) => sum + parseInt(sale.quantidade), 0);
+            const totalValor = sales.reduce((sum, sale) => sum + parseFloat(sale.valor), 0);
+
+            document.getElementById('totalVendas').textContent = totalVendas;
+            document.getElementById('totalQuantidade').textContent = totalQuantidade;
+            document.getElementById('totalValor').textContent = `R$ ${totalValor.toFixed(2).replace('.', ',')}`;
+        }
+
+        // Registrar venda
+        document.getElementById('saleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const usuario = document.getElementById('usuario').value;
+            const quantidade = document.getElementById('quantidade').value;
+            const valor = document.getElementById('valor').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/sales`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        usuario,
+                        quantidade: parseInt(quantidade),
+                        valor: parseFloat(valor)
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('saleForm').reset();
+                    await loadSales();
+                    alert('Venda registrada com sucesso!');
+                } else {
+                    const error = await response.json();
+                    alert('Erro ao registrar venda: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Erro ao registrar venda:', error);
+                alert('Erro ao registrar venda. Verifique sua conexão.');
+            }
+        });
+
+        // Deletar venda
+        async function deleteSale(id) {
+            if (!confirm('Tem certeza que deseja remover esta venda?')) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/sales?id=${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await loadSales();
+                    alert('Venda removida com sucesso!');
+                } else {
+                    const error = await response.json();
+                    alert('Erro ao remover venda: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Erro ao remover venda:', error);
+                alert('Erro ao remover venda. Verifique sua conexão.');
+            }
+        }
+
+        // Aplicar filtros
+        function aplicarFiltros() {
+            const usuario = document.getElementById('filtroUsuario').value;
+            const data = document.getElementById('filtroData').value;
+            loadSales(usuario, data);
+        }
+
+        // Limpar filtros
+        function limparFiltros() {
+            document.getElementById('filtroUsuario').value = '';
+            document.getElementById('filtroData').value = '';
+            loadSales();
+        }
+
+        // Carregar vendas ao iniciar
+        loadSales();
+    </script>
+</body>
+</html>
