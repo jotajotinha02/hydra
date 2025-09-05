@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vendas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/png" href="hydra.jpg" />
+  <!-- Import correto do Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+
+  <div class="max-w-6xl mx-auto bg-white rounded-xl shadow p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Registro de Vendas</h1>
+
+    <!-- Formulário -->
+    <form id="venda-form" class="grid md:grid-cols-4 gap-4 mb-6">
+      <input id="usuario" name="usuario" type="text" placeholder="Usuário" required class="p-2 border rounded" />
+      <input id="quantidade" name="quantidade" type="number" placeholder="Quantidade" required class="p-2 border rounded" />
+      <input id="valor" name="valor" type="number" step="0.01" placeholder="Valor" required class="p-2 border rounded" />
+      <button type="submit" class="bg-green-500 text-white p-2 rounded hover:bg-green-700">Registrar</button>
+    </form>
+
+    <!-- Filtros -->
+    <div class="grid md:grid-cols-3 gap-4 mb-4">
+      <select id="filtro-usuario" class="w-full p-2 border rounded">
+        <option value="">Todos os usuários</option>
+      </select>
+      <input type="date" id="filtro-data-inicio" class="w-full p-2 border rounded" />
+      <input type="date" id="filtro-data-fim" class="w-full p-2 border rounded" />
+    </div>
+
+    <!-- Tabela -->
+    <div class="overflow-auto mb-6">
+      <table class="w-full text-sm text-left border">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2 border cursor-pointer">Usuário</th>
+            <th class="p-2 border cursor-pointer">Quantidade</th>
+            <th class="p-2 border cursor-pointer">Valor</th>
+            <th class="p-2 border cursor-pointer">Data</th>
+            <th class="p-2 border">Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-vendas"></tbody>
+        <tfoot>
+          <tr class="bg-gray-100 font-semibold">
+            <td class="p-2 border text-right">Totais:</td>
+            <td id="total-quantidade" class="p-2 border">0</td>
+            <td id="total-valor" class="p-2 border">R$ 0,00</td>
+            <td colspan="2" class="p-2 border"></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <!-- Botão exportar CSV -->
+      <div class="flex justify-end mt-4">
+        <button id="exportarCSV" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
+          Exportar CSV
+        </button>
+      </div>
+
+      <p id="mensagem-vazia" class="text-center mt-4 text-gray-500 hidden">Nenhuma venda encontrada.</p>
+    </div>
+
+    <!-- Gráfico -->
+    <div class="bg-white p-4 rounded shadow">
+      <canvas id="graficoVendas" height="100"></canvas>
+    </div>
+
+  </div>
+
+  <!-- Script principal -->
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
